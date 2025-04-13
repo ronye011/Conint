@@ -44,3 +44,13 @@ Este sistema é útil para validar e reconciliar transações financeiras de for
 ### 5. Por fim execulte o arquivo
 
 > `./install.sh`
+
+---
+
+## 🥽 Instruções de uso
+
+- O arquivo CSV deve conter apenas uma coluna e a primeira linha deve ser o cabaçalho
+- O extrato bancário deve estar da forma em que saiu do banco
+- **Atenção:** caso algum arquivo for editado deve ser recolocado no FCSV para carregar os novos dados, senão o mesmo irá retornar erro ao comparar.
+
+---
