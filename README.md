@@ -51,6 +51,7 @@ Este sistema é útil para validar e reconciliar transações financeiras de for
 
 - O arquivo CSV deve conter apenas uma coluna e a primeira linha deve ser o cabaçalho
 - O extrato bancário deve estar da forma em que saiu do banco
+- O sistema será iniciado localmente como > `http://localhost/`
 - **Atenção:** caso algum arquivo for editado deve ser recolocado no FCSV para carregar os novos dados, senão o mesmo irá retornar erro ao comparar.
 
 ---
