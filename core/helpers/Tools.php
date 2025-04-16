@@ -62,15 +62,15 @@
         return $arquivoTmp;
     }    
 
-    function processCsvDirect($fileKey, $csvSeparate) {
+    function processCsvDirect(fileCSV, $csvSeparate) {
         // Verifica se o arquivo foi enviado corretamente
-        if (!isset($_FILES[$fileKey]) || $_FILES[$fileKey]['error'] !== UPLOAD_ERR_OK) {
+        if (!isset($_FILES['fileCSV']) || $_FILES['fileCSV']['error'] !== UPLOAD_ERR_OK) {
             throw new Exception("Erro no upload do arquivo.");
         }
     
         // Dados do arquivo
-        $arquivoTmp = $_FILES[$fileKey]['tmp_name'];
-        $nomeOriginal = $_FILES[$fileKey]['name'];
+        $arquivoTmp = $_FILES['fileCSV']['tmp_name'];
+        $nomeOriginal = $_FILES['fileCSV']['name'];
         $extensaoArquivo = strtolower(pathinfo($nomeOriginal, PATHINFO_EXTENSION));
         $tipoArquivo = mime_content_type($arquivoTmp);
     
