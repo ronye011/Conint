@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function download() {
     whiteInTerminal("Iniciando download...");
-    whiteInTerminal("Baixado...");
+    whiteInTerminal("Baixado!");
   }
 
   function whiteInTerminal(texto) {
