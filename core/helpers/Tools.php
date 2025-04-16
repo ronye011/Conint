@@ -62,7 +62,7 @@
         return $arquivoTmp;
     }    
 
-    function processCsvDirect(fileCSV, $csvSeparate) {
+    function processCsvDirect($fileCSV, $csvSeparate) {
         // Verifica se o arquivo foi enviado corretamente
         if (!isset($_FILES['fileCSV']) || $_FILES['fileCSV']['error'] !== UPLOAD_ERR_OK) {
             throw new Exception("Erro no upload do arquivo.");
