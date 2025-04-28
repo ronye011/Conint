@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="./assets/images/folder.ico" type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anybody:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/style.css">
+  <script src="./assets/script.js" defer></script>
+  <title>FCSV</title>
+</head>
+<body>
+  <h1 class="title">FCSV</h1>
+  <h5 class="subTitle">Compare o extrato bancário com um arquivo de planilha</h5><br><br>
+
+  <div class="campoLateral">
+    <label>Banco:</label>
+    <label><input type="radio" name="bank" value="0" checked onchange="addInfoBank()">Santander</label>
+    <label><input type="radio" name="bank" value="1" onchange="addInfoBank()">Sicredi</label>
+  </div>
+
+  <div class="campoMarcacao">
+    <label>Formato da planilha a ser inserida:</label>
+    <label><input type="radio" name="file_type" value="998" checked onchange="functionsCSV()">CSV</label>
+    <label><input type="radio" name="file_type" value="999" onchange="functionsCSV()">XLSX</label>
+  </div>
+
+  <div class="campoMarcacao" id="csvSeparate">
+    <label>Separador CSV:</label>
+    <label><input type="radio" name="csvSeparate" value="0" checked>Vírgula</label>
+    <label><input type="radio" name="csvSeparate" value="1">Ponto e vírgula</label>
+  </div>
+
+  <div class="campoMarcacao">
+    <label>Nome da coluna para comparação<span class="required">* </span></label>
+    <input class="textInput" type="text" id="nameColumnFile" placeholder="Digite o nome da coluna">
+    <div class="help-card">
+      <div class="help-content">
+        <h4>Informação Importante</h4>
+        <p>
+          A primeira linha de sua planilha deve ser o cabeçalho contendo o nome das colunas seguido dos dados.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="campoMarcacao">
+    <label>Validar PIX:</label>
+    <label><input type="radio" name="pix_valid" value="0" checked>Sim</label>
+    <label><input type="radio" name="pix_valid" value="1">Não</label>
+  </div>
+
+  <div class="campoMarcacao">
+    <label>Comparar por:</label>
+    <label><input type="radio" name="number_valid" value="0" checked onchange="esconderBarra()">Seu Número</label>
+    <label><input type="radio" name="number_valid" value="1" onchange="esconderBarra()">Nosso Número</label>
+    <label id="TXID" style="display: none;"><input type="radio" name="number_valid" value="2" onchange="esconderBarra()">TXID</label>
+  </div>
+
+  <div class="campoMarcacao" id="remover-barra">
+    <label>Remover barra após o número:</label>
+    <label><input type="radio" name="remove_barra" value="0" checked>Sim</label>
+    <label><input type="radio" name="remove_barra" value="1">Não</label>
+  </div>
+
+  <div class="campoMarcacao" id="remove_verify_digit">
+    <label>Remover dígito verificador:</label>
+    <label><input type="radio" name="remove_verify_digit" value="0" checked>Sim</label>
+    <label><input type="radio" name="remove_verify_digit" value="1">Não</label>
+  </div>
+
+  <div class="campoMarcacao">
+    <label>Arquivo principal</label>
+    <label><input type="radio" name="compare" value="0" checked>Extrato Bancário</label>
+    <label><input type="radio" name="compare" value="1">Planilha</label>
+
+    <div class="help-card">
+      <div class="help-content">
+        <h4>Informação Importante</h4>
+        <p>
+          O arquivo principal servirá como base para a comparação.<br>
+          Por exemplo: o campo <strong>"Nosso Número"</strong> do arquivo secundário será comparado com o arquivo principal.<br>
+          No final, será gerado um novo arquivo contendo os números que <strong>não</strong> foram encontrados no arquivo principal.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="campo">
+    <label>Extrato Bancário<span class="required">* </span></label>
+    <input type="file" id="extrato_bancario" name="fileBank" accept="*/*">
+  </div>
+
+  <div class="campo">
+    <label>Planilha<span class="required">* </span></label>
+    <input type="file" id="file" name="file" accept=".csv, .xlsx">
+  </div>
+
+  <script>
+    function addInfoBank() {
+      const bank = document.querySelector('input[name="bank"]:checked').value;
+      const TXID = document.getElementById("TXID");
+
+      if (bank === "1") {
+        TXID.style.display = "block";
+      } else {
+        TXID.style.display = "none";
+      }
+    }
+
+    function esconderBarra() {
+      const valorSelecionado = document.querySelector('input[name="number_valid"]:checked').value;
+      const campoRemoverBarra = document.getElementById("remover-barra");
+      const remove_verify_digit = document.getElementById("remove_verify_digit");
+
+      if (valorSelecionado === "0") {
+        campoRemoverBarra.style.display = "block";
+        remove_verify_digit.style.display = "none";
+      } else if (valorSelecionado === "1") {
+        campoRemoverBarra.style.display = "none";
+        remove_verify_digit.style.display = "block";
+      } else {
+        campoRemoverBarra.style.display = "none";
+        remove_verify_digit.style.display = "none";
+      }
+    }
+
+    function functionsCSV() {
+      const file_type = document.querySelector('input[name="file_type"]:checked').value;
+      const csvSeparate = document.getElementById("csvSeparate");
+
+      if (file_type === "998") {
+        csvSeparate.style.display = "block";
+      } else {
+        csvSeparate.style.display = "none";
+      }
+    }
+
+    // Chama uma vez ao carregar a página
+    window.addEventListener("DOMContentLoaded", esconderBarra, functionsCSV, addInfoBank);
+  </script>
+
+  <button id="btnComparar" class="buttom_css">Comparar</button>
+
+  <div id="modal" class="modal" style="display: none;">
+    <div id="modal-content" class="modal-content">
+      <div class="modal-head">
+        <span id="btnFecharModal" class="close">&times;</span>
+        <h2>Processando</h2>    
+      </div>
+      <div id="terminal" class="terminal"></div>
+      <button id="btnDownload" class="buttom_css">Download</button>
+    </div>
+  </div>
+</body>
+</html>
