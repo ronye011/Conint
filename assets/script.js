@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
     formData.append("nameColumnFile", document.getElementById("nameColumnFile").value);
     formData.append("csvSeparate", getChecked("csvSeparate"));
 
-    whiteInTerminal("Enviando dados da planilha...");
+    whiteInTerminal("Enviando dados da arquivo...");
 
     fetch(`./core/routers/routerInterface.php?route=${getChecked("file_type")}`, {
         method: 'POST',
@@ -49,7 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
     .then(response => {
         if (response.success) {
 
-          whiteInTerminal("Dados da planilha enviado com sucesso");
+          whiteInTerminal("Dados do arquivo enviado com sucesso");
           whiteInTerminal("Enviando dados do extrato bancário...");
           formData = new FormData();
           formData.append("fileBank", fileBank);
@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
           });
         } else {
             alert(response.message || "Erro ao processar.");
-            whiteInTerminal("Erro ao enviar a planilha");
+            whiteInTerminal("Erro ao enviar o arquivo");
         }
     })
     .catch(error => {
