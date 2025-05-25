@@ -1,8 +1,8 @@
-# 📁 FCSV
+# 📁 Conint
 
 ## 📄 Descrição
 
-O **FCSV** é um sistema que permite comparar as movimentações de um arquivo **CSV** com os números **"Nosso Número"** ou **"Seu Número"** extraídos de um extrato bancário.  
+O **Conint** é um sistema que permite comparar as movimentações de um arquivo **CSV** com os números **"Nosso Número"** ou **"Seu Número"** extraídos de um extrato bancário.  
 Este sistema é útil para validar e reconciliar transações financeiras de forma prática e eficiente.
 
 ---
