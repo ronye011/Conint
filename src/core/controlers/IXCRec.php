@@ -24,7 +24,7 @@
             }
 
             $process = proc_open(
-                '/opt/fcsv-venv/bin/python3 /var/www/core/helpers/Convert.py',
+                '/opt/fcsv-venv/bin/python3 /var/www/src/core/helpers/Convert.py',
                 [
                     0 => ['pipe', 'r'],  // stdin
                     1 => ['pipe', 'w'],  // stdout
