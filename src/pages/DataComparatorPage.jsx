@@ -117,7 +117,7 @@
           if (fileFormat === "csv") planilhaForm.append("csvSeparate", csvSeparator);
 
           writeInTerminal("Enviando dados do arquivo...");
-          const planilhaResp = await fetch(`http://localhost:80/Conciliacao/src/core/routers/routerInterface.php?route=${encodeURIComponent(fileFormat)}`, {
+          const planilhaResp = await fetch(`http://localhost:80/src/core/routers/routerInterface.php?route=${encodeURIComponent(fileFormat)}`, {
             method: "POST",
             body: planilhaForm
           });
@@ -138,7 +138,7 @@
           extratoForm.append("remove_verify_digit", removeCheckDigit ? "0" : "1");
           extratoForm.append("dataCSV", planilhaData.data);
 
-          const extratoResp = await fetch(`http://localhost:80/Conciliacao/src/core/routers/routerInterface.php?route=${bank}`, {
+          const extratoResp = await fetch(`http://localhost:80/src/core/routers/routerInterface.php?route=${bank}`, {
             method: "POST",
             body: extratoForm
           });
