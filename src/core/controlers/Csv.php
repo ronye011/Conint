@@ -35,6 +35,7 @@
             // Abre o arquivo temporário diretamente
             if (($handle = fopen($this->csvFile['tmp_name'], 'r')) !== false) {
                 $cabecalho = fgetcsv($handle, 1000, $csvConfig[$separator]);
+                $cabecalho = preg_replace('/[\x00-\x1F\x7F\xA0\xAD\x{200B}-\x{200F}\x{FEFF}]/u', '', $cabecalho);
             
                 $dados = [];
 

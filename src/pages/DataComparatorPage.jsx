@@ -1,10 +1,11 @@
 
     import React, { useState, useEffect, useRef } from 'react';
-    import { motion, AnimatePresence } from 'framer-motion';
+    import { motion, AnimatePresence, color } from 'framer-motion';
     import { Button } from '@/components/ui/button';
     import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
     import { Input } from '@/components/ui/input';
     import { Label } from '@/components/ui/label';
+    import { Legend } from '@/components/ui/legend';
     import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
     import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
     import { Checkbox } from '@/components/ui/checkbox';
@@ -48,10 +49,16 @@
       const [referenceColumn, setReferenceColumn] = useState('');
       const [spreadsheetFile, setSpreadsheetFile] = useState(null);
       const spreadsheetFileRef = useRef(null);
+      // API Integration State
+      const [urlAPI, seturlAPI] = useState('');
+      const [api, setapi] = useState('ixcprovedor');
+      const [dataInicial, setDataInicial] = useState("");
+      const [dataFinal, setDataFinal] = useState("");
     
       // Step 2 State
-      const [bank, setBank] = useState('santander');
-      const [validPix, setvalidPix] = useState('0');
+      const [bank, setBank] = useState('sicoob');
+      const [token, settoken] = useState('');
+      const [validPix, setvalidPix] = useState('Todos');
       const [comparisonNumber, setComparisonNumber] = useState('seu_numero');
       const [removeBar, setRemoveBar] = useState(false);
       const [removeCheckDigit, setRemoveCheckDigit] = useState(false);
@@ -66,11 +73,15 @@
       const [comparisonResult, setComparisonResult] = useState(null);
     
       const handleNextStep = () => {
-        if (fileFormat !== 'Recebimentos IXC' && !referenceColumn.trim()) {
+        if (fileFormat !== 'Recebimentos IXC' && fileFormat !== 'API (Em desenvolvimento)' && !referenceColumn.trim()) {
           toast({ title: "Erro de Validação", description: "O nome da coluna de referência é obrigatório.", variant: "destructive" });
           return;
         }
-        if (!spreadsheetFile) {
+        if (fileFormat === 'API (Em desenvolvimento)' && (!urlAPI.trim() || !token.trim() || !dataInicial.trim() || !dataFinal.trim())) {
+          toast({ title: "Erro de Validação", description: "Por favor, preencha os campos de integração.", variant: "destructive" });
+          return;
+        }
+        if (!spreadsheetFile && fileFormat !== 'API (Em desenvolvimento)') {
           toast({ title: "Erro de Validação", description: "Por favor, faça o upload do arquivo.", variant: "destructive" });
           return;
         }
@@ -92,7 +103,7 @@
         // This is a placeholder. Specific banks might have specific statement formats.
         // For now, let's assume OFX, TXT, or PDF are common.
         if (selectedBank === 'modobank') return '.txt,.csv'; // Example
-        return '.ofx,.txt,.pdf,.csv';
+        return '.txt,.pdf,.csv,.xls';
       };
 
       const writeInTerminal = (message) => {
@@ -117,9 +128,10 @@
           if (fileFormat === "csv") planilhaForm.append("csvSeparate", csvSeparator);
 
           writeInTerminal("Enviando dados do arquivo...");
-          const planilhaResp = await fetch(`http://localhost:80/src/core/routers/routerInterface.php?route=${encodeURIComponent(fileFormat)}`, {
+          const planilhaResp = await fetch(`http://localhost/Conint/src/core/routers/routerInterface.php?route=${encodeURIComponent(fileFormat)}`, {
             method: "POST",
-            body: planilhaForm
+            body: planilhaForm,
+            credentials: 'include',
           });
 
           const planilhaData = await planilhaResp.json();
@@ -138,9 +150,10 @@
           extratoForm.append("remove_verify_digit", removeCheckDigit ? "0" : "1");
           extratoForm.append("dataCSV", planilhaData.data);
 
-          const extratoResp = await fetch(`http://localhost:80/src/core/routers/routerInterface.php?route=${bank}`, {
+          const extratoResp = await fetch(`http://localhost/Conint/src/core/routers/routerInterface.php?route=${bank}`, {
             method: "POST",
-            body: extratoForm
+            body: extratoForm,
+            credentials: 'include',
           });
 
           const extratoData = await extratoResp.json();
@@ -221,12 +234,12 @@
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="fileFormat" className="flex items-center">
+                  <Legend htmlFor="fileFormat" className="flex items-center">
                     Formato da Arquivo
                     <HelpTooltip content="Selecione o tipo de arquivo: CSV, XLSX (Excel) ou PDF." />
-                  </Label>
+                  </Legend>
                   <RadioGroup id="fileFormat" value={fileFormat} onValueChange={setFileFormat} className="flex space-x-4">
-                    {['csv', 'xlsx', 'Recebimentos IXC'].map(format => (
+                    {['csv', 'xlsx', 'Recebimentos IXC', 'API (Em desenvolvimento)'].map(format => (
                       <div key={format} className="flex items-center space-x-2">
                         <RadioGroupItem value={format} id={`format-${format}`} />
                         <Label htmlFor={`format-${format}`}>{format.toUpperCase()}</Label>
@@ -242,10 +255,10 @@
                     exit={{ opacity: 0, height: 0 }}
                     className="space-y-2 overflow-hidden"
                   >
-                    <Label htmlFor="csvSeparator" className="flex items-center">
+                    <Legend htmlFor="csvSeparator" className="flex items-center">
                       Separador do CSV
                       <HelpTooltip content="Defina o caractere usado para separar os valores no seu arquivo CSV (geralmente vírgula ou ponto e vírgula)." />
-                    </Label>
+                    </Legend>
                     <RadioGroup id="csvSeparator" value={csvSeparator} onValueChange={setCsvSeparator} className="flex space-x-4">
                       {[{label: 'Vírgula (,)', value: '0'}, {label: 'Ponto e Vírgula (;)', value: '1'}].map(sep => (
                         <div key={sep.value} className="flex items-center space-x-2">
@@ -257,7 +270,7 @@
                   </motion.div>
                 )}
     
-                {fileFormat !== 'Recebimentos IXC' && (
+                {(fileFormat === 'xlsx' || fileFormat === 'csv') && (
                   <div className="space-y-2">
                     <Label htmlFor="referenceColumn" className="flex items-center">
                       Nome da Coluna de Referência
@@ -272,27 +285,106 @@
                     />
                   </div>
                 )}
-    
-                <div className="space-y-2">
-                  <Label htmlFor="spreadsheetFile" className="flex items-center">
-                    Upload do Arquivo
-                    <HelpTooltip content={`Selecione o arquivo da planilha no formato ${fileFormat.toUpperCase()} escolhido.`} />
-                  </Label>
-                  <div className="flex items-center space-x-2">
-                    <Button type="button" variant="outline" onClick={() => spreadsheetFileRef.current?.click()} className="flex-shrink-0">
-                      <UploadCloud className="mr-2 h-4 w-4" /> Escolher Arquivo
-                    </Button>
-                    <Input 
-                      id="spreadsheetFile" 
-                      type="file" 
-                      ref={spreadsheetFileRef}
-                      accept={getFileAcceptType(fileFormat)}
-                      onChange={(e) => setSpreadsheetFile(e.target.files[0])} 
-                      className="hidden"
-                    />
-                    {spreadsheetFile && <span className="text-sm text-muted-foreground truncate max-w-[200px]">{spreadsheetFile.name}</span>}
+
+                {fileFormat === 'API (Em desenvolvimento)' && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="api" className="flex items-center">
+                        Integração
+                        <HelpTooltip content="Selecione o sistema que será utilizado." />
+                      </Label>
+                      <Select value={api} onValueChange={setapi}>
+                        <SelectTrigger id="api">
+                          <SelectValue placeholder="Selecione a API" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ixcprovedor">IXC Provedor</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="urlAPI" className="flex items-center">
+                        URL da API
+                        <HelpTooltip content="Informe a url das requisição do sistema para o sistema integrador." />
+                      </Label>
+                      <Input 
+                        id="urlAPI" 
+                        value={urlAPI} 
+                        onChange={(e) => seturlAPI(e.target.value)} 
+                        placeholder="Ex: https://api.seusistema.com.br/router" 
+                        required 
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="token" className="flex items-center">
+                        Token de Acesso
+                        <HelpTooltip content="Informe o token para acesso ao sistema integrador." />
+                      </Label>
+                      <Input 
+                        id="token" 
+                        value={token} 
+                        onChange={(e) => settoken(e.target.value)} 
+                        placeholder="Ex: 2343:v243v5vn5b4235v3n45bv235nb4v35b35v325vb43nmn2bn54v2354" 
+                        required 
+                      />
+                    </div>
+
+                    <div className="flex gap-4">
+                      <div className="flex-1 space-y-2">
+                        <Label htmlFor="dataInicial" className="flex items-center">
+                          Data Inicial
+                          <HelpTooltip content="Informe a data inicial para filtragem ou requisição." />
+                        </Label>
+                        <Input
+                          id="dataInicial"
+                          type="date"
+                          value={dataInicial}
+                          onChange={(e) => setDataInicial(e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      <div className="flex-1 space-y-2">
+                        <Label htmlFor="dataFinal" className="flex items-center">
+                          Data Final
+                          <HelpTooltip content="Informe a data final para filtragem ou requisição." />
+                        </Label>
+                        <Input
+                          id="dataFinal"
+                          type="date"
+                          value={dataFinal}
+                          onChange={(e) => setDataFinal(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
+    
+                {fileFormat != 'API (Em desenvolvimento)' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="spreadsheetFile" className="flex items-center">
+                      Upload do Arquivo
+                      <HelpTooltip content={`Selecione o arquivo da planilha no formato ${fileFormat.toUpperCase()} escolhido.`} />
+                    </Label>
+                    <div className="flex items-center space-x-2">
+                      <Button type="button" variant="outline" onClick={() => spreadsheetFileRef.current?.click()} className="flex-shrink-0">
+                        <UploadCloud className="mr-2 h-4 w-4" /> Escolher Arquivo
+                      </Button>
+                      <Input 
+                        id="spreadsheetFile" 
+                        type="file" 
+                        ref={spreadsheetFileRef}
+                        accept={getFileAcceptType(fileFormat)}
+                        onChange={(e) => setSpreadsheetFile(e.target.files[0])} 
+                        className="hidden"
+                      />
+                      {spreadsheetFile && <span className="text-sm text-muted-foreground truncate max-w-[200px]">{spreadsheetFile.name}</span>}
+                    </div>
+                  </div>
+                )}
               </CardContent>
               <CardFooter className="justify-end">
                 <Button onClick={handleNextStep} className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 ease-in-out">
@@ -324,6 +416,7 @@
                       <SelectValue placeholder="Selecione o banco" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="sicoob">Sicoob</SelectItem>
                       <SelectItem value="santander">Santander</SelectItem>
                       <SelectItem value="sicredi">Sicredi</SelectItem>
                       <SelectItem value="bancodobrasil">Banco do Brasil</SelectItem>
@@ -367,7 +460,7 @@
                       <RadioGroup value={comparisonNumber} onValueChange={setComparisonNumber} className="flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0">
                         {['seu_numero', 'nosso_numero', 'txid'].map(numOpt => (
                           <div key={numOpt} className="flex items-center space-x-2">
-                            <RadioGroupItem value={numOpt} id={`compNum-${numOpt}`} disabled={numOpt === 'txid' && validPix === "Não" /* Example: TXID only if PIX validation is on */} />
+                            <RadioGroupItem value={numOpt} id={`compNum-${numOpt}`} disabled={numOpt === 'txid' && (validPix === "Não" || validPix === "Todos" || bank === "sicoob" || bank === "bancodobrasil" || bank === "santander")  /* Example: TXID only if PIX validation is on */} />
                             <Label htmlFor={`compNum-${numOpt}`}>{numOpt.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</Label>
                           </div>
                         ))}
@@ -375,6 +468,7 @@
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {bank !== 'sicoob' && (
                         <div className="flex items-center space-x-2">
                           <Checkbox id="removeBar" checked={removeBar} onCheckedChange={setRemoveBar} />
                           <Label htmlFor="removeBar" className="flex items-center">
@@ -382,6 +476,8 @@
                             <HelpTooltip content="Alguns bancos incluem uma barra e informações adicionais após o número principal. Marque para remover." />
                           </Label>
                         </div>
+                      )}
+                      {comparisonNumber == 'nosso_numero' && (
                         <div className="flex items-center space-x-2">
                           <Checkbox id="removeCheckDigit" checked={removeCheckDigit} onCheckedChange={setRemoveCheckDigit} />
                           <Label htmlFor="removeCheckDigit" className="flex items-center">
@@ -389,6 +485,7 @@
                             <HelpTooltip content="Remove o último dígito do número, que geralmente é um dígito verificador." />
                           </Label>
                         </div>
+                      )}
                     </div>
                   </motion.div>
                 )}
@@ -399,7 +496,7 @@
                     <HelpTooltip content="Defina qual arquivo será a referência principal para a comparação: o extrato bancário ou a planilha." />
                   </Label>
                   <RadioGroup value={comparisonBase} onValueChange={setComparisonBase} className="flex space-x-4">
-                    {[{label: 'Extrato Bancário', value: '0'}, {label: 'Planilha', value: '1'}].map(base => (
+                    {[{label: 'Falta na planilha', value: '0'}, {label: 'Falta no banco', value: '1'}].map(base => (
                       <div key={base.value} className="flex items-center space-x-2">
                         <RadioGroupItem value={base.value} id={`base-${base.value}`} />
                         <Label htmlFor={`base-${base.value}`}>{base.label}</Label>
@@ -478,7 +575,7 @@
             </motion.div>
           )}
 
-          <Dialog open={isComparing} onOpenChange={ (open) => { if(!open && !downloadReady) setIsComparing(false) } }>
+          <Dialog open={isComparing} onOpenChange={ (open) => {if(!open) setIsComparing(false) } }>
             <DialogContent className="sm:max-w-md md:max-w-lg lg:max-w-2xl !bg-slate-900 border-slate-700 text-slate-200">
               <DialogHeader>
                 <DialogTitle className="flex items-center text-slate-100">

@@ -1,19 +1,38 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Login from "./pages/Login";
+import DataComparatorPage from "./pages/DataComparatorPage";
+import ProtectedRoute from "./components/protectedRoute";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import NotFoundPage from "./pages/NotFoundPage";
 
-    import React from 'react';
-    import DataComparatorPage from '@/pages/DataComparatorPage';
-    import { Toaster } from '@/components/ui/toaster';
-    import { TooltipProvider } from '@/components/ui/tooltip';
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Rota pública */}
+        <Route path="/" element={<Login />} />
 
-    function App() {
-      return (
-        <TooltipProvider>
-          <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-slate-50 flex flex-col items-center justify-center p-4">
-            <DataComparatorPage />
-            <Toaster />
-          </div>
-        </TooltipProvider>
-      );
-    }
+        {/* Rota protegida */}
+        <Route
+          path="/DataComparatorPage"
+          element={
+            <ProtectedRoute>
+              <TooltipProvider>
+                <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-slate-50 flex flex-col items-center justify-center p-4">
+                  <DataComparatorPage />
+                  <Toaster />
+                </div>
+              </TooltipProvider>
+            </ProtectedRoute>
+          }
+        />
 
-    export default App;
-  
+        {/* Rota fallback (404) */}
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;

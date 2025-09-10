@@ -24,7 +24,7 @@
             }
 
             $process = proc_open(
-                '/opt/fcsv-venv/bin/python3 /var/www/src/core/helpers/Convert.py',
+                '/opt/fcsv-venv/bin/python /var/www/Conint/src/core/helpers/Convert.py',
                 [
                     0 => ['pipe', 'r'],  // stdin
                     1 => ['pipe', 'w'],  // stdout
@@ -48,7 +48,7 @@
                 if ($exitCode === 0) {
                     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
                     header('Content-Disposition: attachment; filename="convertido.xlsx"');
-                    header('Content-Length: ' . strlen($excelData));
+                    //header('Content-Length: ' . strlen($excelData));
 
                     $tmpXlsx = tempnam(sys_get_temp_dir(), 'xlsx_') . '.xlsx';
                     file_put_contents($tmpXlsx, $excelData);
